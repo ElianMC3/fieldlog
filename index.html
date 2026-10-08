@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>FieldLog - Bitácora de Campo</title>
+
+    <link href='https://fonts.googleapis.com/css?family=Quicksand:300,400' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Lato:400,300' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css">
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/animate.css">
+
+    <link rel="shortcut icon" type="image/ico" href="img/favicon.ico"/>
+    <link rel="apple-touch-icon" href="img/icons/icon-152x152.png">
+    <link rel="manifest" href="manifest.json">
+
+    <meta name="theme-color" content="#0d9488">
+    <meta name="description" content="Bitácora e inventario de trabajo en campo que funciona sin conexión">
+</head>
+<body>
+
+    <!-- Titulo -->
+    <header class="first">
+        <span class="hdr-left">
+            <span id="ayuda-btn" class="fa fa-question-circle hdr-btn" title="Cómo usar FieldLog"></span>
+            <span id="sync-btn" class="fa fa-sync-alt hdr-btn" title="Sincronizar ahora"></span>
+        </span>
+        <span id="titulo">FieldLog</span>
+        <span id="notif-btn" class="fa fa-bell hdr-btn" title="Activar notificaciones"></span>
+    </header>
+    <!-- Fin Titulo -->
+
+    <!-- Estado de conexión / sincronización -->
+    <div id="barra-estado" class="barra-estado animated fadeIn fast">
+        <span id="estado-punto" class="punto"></span>
+        <span id="estado-texto">Verificando conexión...</span>
+        <span id="pendientes-texto" class="pendientes oculto"></span>
+    </div>
+
+    <!-- Tabs -->
+    <nav class="tabs">
+        <button id="tab-bitacora" class="tab activo"><i class="fa fa-clipboard-list"></i> Bitácora</button>
+        <button id="tab-inventario" class="tab"><i class="fa fa-boxes"></i> Inventario</button>
+    </nav>
+
+    <!-- Lista de registros de bitácora -->
+    <ul id="lista-bitacora" class="lista-registros"></ul>
+
+    <!-- Lista de inventario -->
+    <ul id="lista-inventario" class="lista-registros oculto"></ul>
+
+    <!-- Estado vacío -->
+    <div id="vacio" class="vacio oculto animated fadeIn fast">
+        <i class="fa fa-inbox"></i>
+        <p id="vacio-texto">Sin registros todavía.<br>Toca <b>+</b> para crear el primero.</p>
+    </div>
+
+    <!-- Modal nuevo registro -->
+    <div id="modal" class="oculto">
+        <span class="first">
+            <span id="cancel-btn" class="fa fa-times hdr-btn"></span>
+            <span id="titulo-modal">Nuevo registro</span>
+        </span>
+
+        <div class="formulario">
+
+            <!-- Campos Bitácora -->
+            <div id="campos-bitacora">
+                <label>Tipo de trabajo</label>
+                <select id="txtTipo">
+                    <option value="Inspección">Inspección</option>
+                    <option value="Mantenimiento">Mantenimiento</option>
+                    <option value="Instalación">Instalación</option>
+                    <option value="Inventario físico">Inventario físico</option>
+                    <option value="Incidencia">Incidencia</option>
+                </select>
+
+                <label>Ubicación</label>
+                <input type="text" id="txtUbicacion" placeholder="Nave A, Km 12, Almacén 3..." autocomplete="off">
+
+                <label>Notas</label>
+                <textarea id="txtNotas" placeholder="Descripción del trabajo realizado..." rows="4"></textarea>
+            </div>
+
+            <!-- Campos Inventario -->
+            <div id="campos-inventario" class="oculto">
+                <label>Clave</label>
+                <input type="text" id="txtClave" placeholder="ART-001" autocomplete="off">
+
+                <label>Artículo</label>
+                <input type="text" id="txtNombre" placeholder="Nombre del artículo" autocomplete="off">
+
+                <div class="fila">
+                    <div>
+                        <label>Cantidad</label>
+                        <input type="number" id="txtCantidad" min="0" placeholder="0">
+                    </div>
+                    <div>
+                        <label>Unidad</label>
+                        <select id="txtUnidad">
+                            <option value="uds">uds</option>
+                            <option value="cajas">cajas</option>
+                            <option value="kg">kg</option>
+                            <option value="m">m</option>
+                            <option value="lt">lt</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div id="guardar-btn" class="fab">
+            <i class="fa fa-paper-plane"></i>
+        </div>
+    </div>
+    <!-- Fin Modal -->
+
+    <!-- Botón nuevo registro -->
+    <div id="nuevo-btn" class="fab">
+        <i class="fa fa-plus"></i>
+    </div>
+
+    <!-- Ayuda / instrucciones de uso -->
+    <div id="ayuda" class="oculto">
+        <span class="first">
+            <span id="ayuda-close" class="fa fa-times hdr-btn"></span>
+            <span id="ayuda-titulo">Cómo usar FieldLog</span>
+        </span>
+
+        <div class="ayuda-contenido">
+
+            <section>
+                <h4><i class="fa fa-clipboard-list"></i> 1. Registrar un trabajo (Bitácora)</h4>
+                <p>Estás en la pestaña <b>Bitácora</b>. Toca el botón <b>+</b> (esquina inferior derecha), elige el
+                    tipo de trabajo, escribe la ubicación y las notas, y toca <b>✔</b>. El registro aparece en la lista
+                    con el estado <span class="badge pendiente">pendiente</span>.</p>
+            </section>
+
+            <section>
+                <h4><i class="fa fa-boxes"></i> 2. Controlar el Inventario</h4>
+                <p>Cambia a la pestaña <b>Inventario</b> y toca <b>+</b> para dar de alta artículos con clave,
+                    nombre, cantidad y unidad. Funciona igual: se guarda primero en el dispositivo.</p>
+            </section>
+
+            <section>
+                <h4><i class="fa fa-wifi"></i> 3. Trabajar sin conexión</h4>
+                <p>Puedes usar la app con el modo avión activado. La barra verde/roja bajo el título te dice si estás
+                    <b>En línea</b> o <b>Sin conexión</b> y cuántos registros faltan por enviar. Todo se guarda en el
+                    dispositivo (IndexedDB): nada se pierde si cierras la app o se apaga el equipo.</p>
+            </section>
+
+            <section>
+                <h4><i class="fa fa-sync-alt"></i> 4. Sincronizar</h4>
+                <p>Al volver la red, la app envía sola los registros pendientes. También puedes forzarlo tocando el
+                    icono <b>⟳</b> del título. Cuando termina, el badge cambia a
+                    <span class="badge ok">sincronizado</span> y recibes una notificación con el resultado.</p>
+            </section>
+
+            <section>
+                <h4><i class="fa fa-bell"></i> 5. Activar las notificaciones</h4>
+                <p>Toca la <b>campana</b> 🔔 del título y acepta el permiso. Eso suscribe el dispositivo al servidor
+                    de notificaciones (debe estar corriendo con <code>npm start</code>). La campana se enciende en
+                    amarillo cuando ya está activa; vuelve a tocarla para desactivarla.</p>
+                <p class="ayuda-nota">Si la bloqueaste antes: borra el sitio en <b>Configuración → Privacidad →
+                    Sitios → Notificaciones</b> y recarga la página.</p>
+                <button id="probar-notif-btn" class="btn-ayuda"><i class="fa fa-paper-plane"></i> Probar notificación</button>
+            </section>
+
+            <section>
+                <h4><i class="fa fa-mobile-alt"></i> 6. Instalar como app</h4>
+                <p><b>Android/Chrome:</b> menú ⋮ → <i>Instalar aplicación</i> o <i>Añadir a pantalla de inicio</i>.
+                    <b>iPhone/Safari:</b> botón Compartir → <i>Añadir a pantalla de inicio</i>.
+                    <b>Escritorio:</b> ícono de instalar en la barra de direcciones.</p>
+            </section>
+
+            <section>
+                <h4><i class="fa fa-exclamation-triangle"></i> Si no llegan las notificaciones push</h4>
+                <ul>
+                    <li>El servidor debe estar corriendo: <code>cd server &amp;&amp; npm start</code>.</li>
+                    <li>Cada navegador se suscribe por separado: toca la campana en cada dispositivo.</li>
+                    <li>Si recargas el server, las suscripciones se borran (viven en memoria): vuelve a tocar la campana.</li>
+                    <li>Las notificaciones de <b>sincronización y guardado</b> son locales y funcionan sin servidor,
+                        pero necesitan que hayas aceptado el permiso.</li>
+                </ul>
+            </section>
+
+            <button id="ayuda-cerrar-btn" class="btn-ayuda btn-primario">Entendido, cerrar</button>
+        </div>
+    </div>
+    <!-- Fin Ayuda -->
+
+    <!-- Mensajes flotantes (feedback sin notificación) -->
+    <div id="toast" class="toast"></div>
+
+    <script src="js/libs/jquery.js"></script>
+    <script src="js/db.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

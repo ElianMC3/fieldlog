@@ -1,0 +1,19 @@
+# Dependencias
+node_modules/
+
+# Secretos (NUNCA subir .env: llave privada VAPID)
+server/.env
+.env
+
+# Datos locales del server (ya no se usa: el server es stateless)
+server/data/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Sistema / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

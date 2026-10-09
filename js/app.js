@@ -4,8 +4,22 @@
 const VAPID_PUBLIC_KEY = 'BKsTf1wxQNiM0tlZUpgzbxoPP-C3phHxs4wEKs7MgK-XJ1vp37vl3YWUNewnNjvTS7I-pHIrGUna2TVpWXmCwpM';
 
 // URL del servidor de notificaciones/sincronización.
-// En GitHub Pages cámbiala por la URL pública donde corras el server (https://...).
-const API_BASE = 'http://localhost:3000';
+// Se puede cambiar en caliente desde la ayuda (botón ?), así la app publicada en
+// GitHub Pages puede apuntar a localhost (túnel) o a un host público (Render)
+// sin volver a desplegar. El valor se guarda en localStorage.
+const API_BASE_POR_DEFECTO = 'http://localhost:3000';
+
+function normalizarUrl(url) {
+    return (url || '').trim().replace(/\/+$/, '');
+}
+
+let API_BASE = (function () {
+    try {
+        return normalizarUrl(localStorage.getItem('fieldlog-servidor')) || API_BASE_POR_DEFECTO;
+    } catch (e) {
+        return API_BASE_POR_DEFECTO;
+    }
+})();
 
 function urlBase64ToUint8Array(base64String) {
     const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -393,9 +407,35 @@ tabInventario.on('click', () => cambiarModulo('inventario'));
 // ===== Ayuda / instrucciones de uso =====
 const ayuda = $('#ayuda');
 
-$('#ayuda-btn').on('click', () => ayuda.removeClass('oculto'));
+function pintarServidorActual() {
+    $('#servidor-input').val(API_BASE);
+    $('#servidor-actual').text(API_BASE);
+}
+
+$('#ayuda-btn').on('click', () => {
+    pintarServidorActual();
+    ayuda.removeClass('oculto');
+});
 $('#ayuda-close').on('click', () => ayuda.addClass('oculto'));
 $('#ayuda-cerrar-btn').on('click', () => ayuda.addClass('oculto'));
+
+// URL del servidor desde la ayuda (se guarda en el dispositivo)
+$('#guardar-servidor-btn').on('click', () => {
+    const url = normalizarUrl($('#servidor-input').val());
+    if (url && !/^https?:\/\//i.test(url)) {
+        toast('La URL debe empezar con http:// o https://');
+        return;
+    }
+    API_BASE = url || API_BASE_POR_DEFECTO;
+    try {
+        if (url) localStorage.setItem('fieldlog-servidor', API_BASE);
+        else localStorage.removeItem('fieldlog-servidor');
+    } catch (e) { /* almacenamiento no disponible */ }
+    pintarServidorActual();
+    console.log('Servidor configurado:', API_BASE);
+    toast('Servidor guardado: ' + API_BASE);
+    reenviarSuscripcion();
+});
 
 $('#probar-notif-btn').on('click', async () => {
     const permitido = await pedirPermisoNotificaciones();

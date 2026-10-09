@@ -1,0 +1,17 @@
+# Blueprint de Render para el servidor de notificaciones de FieldLog.
+# Uso: en render.com -> New -> Blueprint -> conecta este repo.
+# Render pedirá los valores de VAPID_PUBLIC y VAPID_PRIVATE (no van en el repo).
+services:
+  - type: web
+    name: fieldlog-server
+    runtime: node
+    plan: free
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: VAPID_PUBLIC
+        sync: false
+      - key: VAPID_PRIVATE
+        sync: false

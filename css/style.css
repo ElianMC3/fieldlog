@@ -488,6 +488,24 @@ html, body {
     border-radius: 6px;
 }
 
+.ayuda-contenido input[type="url"] {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 6px;
+    font-family: 'Lato';
+    font-size: 0.95em;
+    color: #334155;
+    margin: 4px 0 6px;
+}
+
+.ayuda-contenido input[type="url"]:focus {
+    outline: none;
+    border-color: #0d9488;
+}
+
 .ayuda-contenido .badge {
     font-size: 0.72em;
 }

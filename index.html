@@ -163,7 +163,7 @@
             <section>
                 <h4><i class="fa fa-bell"></i> 5. Activar las notificaciones</h4>
                 <p>Toca la <b>campana</b> 🔔 del título y acepta el permiso. Eso suscribe el dispositivo al servidor
-                    de notificaciones (debe estar corriendo con <code>npm start</code>). La campana se enciende en
+                    de notificaciones configurado (ver sección 7). La campana se enciende en
                     amarillo cuando ya está activa; vuelve a tocarla para desactivarla.</p>
                 <p class="ayuda-nota">Si la bloqueaste antes: borra el sitio en <b>Configuración → Privacidad →
                     Sitios → Notificaciones</b> y recarga la página.</p>
@@ -178,11 +178,22 @@
             </section>
 
             <section>
+                <h4><i class="fa fa-server"></i> 7. Configurar el servidor</h4>
+                <p>Escribe la URL pública del servidor de notificaciones (por ejemplo la de Render o la de un
+                    túnel) y toca <b>Guardar</b>. Se guarda en este dispositivo, así que la misma app instalada
+                    desde GitHub Pages puede apuntar al servidor que quieras sin re-desplegar.</p>
+                <input type="url" id="servidor-input" placeholder="https://tu-servidor.onrender.com" autocomplete="off">
+                <button id="guardar-servidor-btn" class="btn-ayuda"><i class="fa fa-save"></i> Guardar servidor</button>
+                <p class="ayuda-nota">Servidor en uso: <code id="servidor-actual">http://localhost:3000</code></p>
+            </section>
+
+            <section>
                 <h4><i class="fa fa-exclamation-triangle"></i> Si no llegan las notificaciones push</h4>
                 <ul>
-                    <li>El servidor debe estar corriendo: <code>cd server &amp;&amp; npm start</code>.</li>
-                    <li>Cada navegador se suscribe por separado: toca la campana en cada dispositivo.</li>
-                    <li>Si recargas el server, las suscripciones se borran (viven en memoria): vuelve a tocar la campana.</li>
+                    <li>Comprueba que el <b>servidor en uso</b> (sección 7) sea el correcto y esté encendido.</li>
+                    <li>En local: <code>cd server &amp;&amp; npm run dev</code>. En la nube, revisa el panel del host.</li>
+                    <li>El servidor guarda las suscripciones en memoria: si se reinicia, vuelve a tocar la campana
+                        (o recarga la página, que reenvía sola la suscripción).</li>
                     <li>Las notificaciones de <b>sincronización y guardado</b> son locales y funcionan sin servidor,
                         pero necesitan que hayas aceptado el permiso.</li>
                 </ul>

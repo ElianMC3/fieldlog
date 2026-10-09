@@ -44,11 +44,13 @@ Proyecto basado en la estructura de la PWA *Twittor* (Service Worker + manifest 
 
 ### 5. Activar las notificaciones
 
-1. El **server debe estar corriendo** (`npm start`).
+1. El **server debe estar corriendo** (`npm run dev` en `server/`, ver más abajo).
 2. Toca la **campana 🔔** del título → acepta el permiso.
 3. La campana se enciende en **amarillo** cuando está activa.
    Vuelve a tocarla para **desactivarla**.
-4. Para probar: abre la ayuda (`?`) → **Probar notificación**, o dispara una push
+4. La URL del servidor se configura **desde la propia app**: ayuda (`?`) → sección **7. Configurar el servidor**.
+   Se guarda en el dispositivo, así no hay que re-desplegar para cambiar de servidor.
+5. Para probar: abre la ayuda (`?`) → **Probar notificación**, o dispara una push
    desde una terminal:
 
 ```bash
@@ -90,20 +92,26 @@ http-server -o
 ## 2. Correr el server (notificaciones push + sync)
 
 ```bash
-cd /home/elianmc4/Documentos/PWA/server
-npm start
+cd /home/elianmc4/Documentos/PWA/fieldlog/server
+npm install        # solo la primera vez
+npm run dev        # local: carga el .env con las llaves VAPID
+# en producción (Render y similares): npm start
 ```
 
 Queda activo en `http://localhost:3000` con:
 
 | Endpoint | Método | Descripción |
 |---|---|---|
-| `/api/subscribe` | POST | Guarda la suscripción push (idempotente por endpoint) |
+| `/api/subscribe` | POST | Guarda la suscripción push en memoria (idempotente por endpoint) |
 | `/api/subscribe` | DELETE | Elimina una suscripción (la app la llama al apagar la campana) |
 | `/api/subscriptions` | GET | Muestra cuántas suscripciones hay activas |
 | `/api/push` | POST | Envía una notificación a todos los suscriptores |
 | `/api/sync` | POST | Recibe la cola de registros offline de FieldLog |
 | `/api/sync` | GET | Devuelve los registros sincronizados |
+| `/health` | GET | Estado del servidor (lo usan los monitores anti-sleep) |
+
+El servidor es **stateless**: las suscripciones viven solo en memoria (no escribe en disco), ideal para
+hosts gratuitos. La app **reenvía sola** su suscripción al abrirse, así que se recuperan tras un reinicio.
 
 La llave pública VAPID ya está en `js/app.js` (`VAPID_PUBLIC_KEY`) y coincide con el `.env` del server.
 
@@ -117,7 +125,7 @@ La llave pública VAPID ya está en `js/app.js` (`VAPID_PUBLIC_KEY`) y coincide 
 
 ## 4. Notificaciones push
 
-1. Server corriendo en `localhost:3000`.
+1. Server corriendo en `localhost:3000` (o el host que configures).
 2. En la app, toca la **campana** → acepta permisos → se suscribe con la llave VAPID.
 3. Puedes disparar una push manualmente con el `curl` de la guía (sección 5).
 
@@ -127,27 +135,48 @@ Las notificaciones también se usan como **feedback local** (sin servidor): guar
 
 1. **¿La campana está en amarillo?** Si no, no hay suscripción: tócala y acepta el permiso.
    (Antes la campana estaba oculta; ya siempre es visible en la barra superior.)
-2. **¿El server está corriendo?** `npm start` en la carpeta `server`.
-3. **Verifica suscripciones**: abre <http://localhost:3000/api/subscriptions> — debe mostrar `"total": 1` o más.
-4. **¿Reiniciaste el server?** Las suscripciones viven en memoria: al reiniciarse se borran.
+2. **¿El servidor en uso es el correcto?** Ayuda (`?`) → sección **7. Configurar el servidor**.
+3. **En local, ¿el server está corriendo?** `npm run dev` en la carpeta `server`.
+4. **Verifica suscripciones**: abre `<url-del-server>/api/subscriptions` — debe mostrar `"total": 1` o más.
+5. **¿Reiniciaste el server?** Las suscripciones viven en memoria: al reiniciarse se borran.
    La app las **reenvía sola** al abrirse, pero solo si ya tenías permiso concedido.
-5. **¿Permiso bloqueado?** Configuración del sitio → Notificaciones → Permitir → recarga.
+6. **¿Permiso bloqueado?** Configuración del sitio → Notificaciones → Permitir → recarga.
    (Opción "Probar notificación" en la ayuda `?` para validar al instante.)
-6. **Push vs. local**: las notificaciones *push* necesitan server accesible; las de
+7. **Push vs. local**: las notificaciones *push* necesitan server accesible; las de
    *confirmación de sincronización* son locales y solo piden permiso de notificaciones.
 
-## 5. Despliegue en GitHub Pages
+## 5. Despliegue
 
-1. Sube la carpeta `fieldlog` a un repositorio (por ejemplo en la raíz).
-2. En GitHub → Settings → Pages → rama `main` / raíz (`/`).
-3. **Importante**: el proyecto usa **rutas relativas** (`./`, `sw.js`, `manifest.json`) por lo que funciona tanto en la raíz del dominio como en `https://usuario.github.io/repo/`.
+### 5.1 App en GitHub Pages
 
-Consideraciones al publicar:
+1. Sube el contenido de `fieldlog/` al repositorio (rama `main`, raíz `/`).
+2. GitHub → **Settings → Pages** → *Deploy from a branch* → `main` / `/ (root)`.
+3. Queda en `https://usuario.github.io/repo/`. El proyecto usa **rutas relativas** (`./`, `sw.js`,
+   `manifest.json`) y trae `.nojekyll`, así que funciona en la raíz o en subcarpeta sin cambios.
 
-- GitHub Pages sirve por **HTTPS** → Service Worker e instalación funcionan.
-- Cambia `API_BASE` en `js/app.js` por la URL pública de tu server (el server de `localhost:3000` no es accesible desde internet; usa un host en Render/Railway/localhost con túnel, o deja la sync local si no hay backend).
-- Push solo funciona con el server accesible por HTTPS desde el navegador.
-- El archivo `.nojekyll` evita que GitHub Pages procese la carpeta con Jekyll.
+### 5.2 Servidor en Render (gratis) + anti-sleep
+
+El repo incluye `render.yaml`, así que Render lo configura solo:
+
+1. Entra a [render.com](https://render.com) → **New → Blueprint** → conecta este repositorio.
+2. Render detecta `render.yaml` (servicio `fieldlog-server`, `rootDir: server`, plan *free*).
+3. Cuando lo pida, pega las variables **`VAPID_PUBLIC`** y **`VAPID_PRIVATE`** (los valores de tu `.env`;
+   no van en el repo por seguridad). La pública debe ser la misma que `VAPID_PUBLIC_KEY` en `js/app.js`.
+4. Al terminar te da una URL `https://fieldlog-server-xxxx.onrender.com`.
+5. **Configúrala en la app**: abre la app publicada → ayuda (`?`) → sección **7. Configurar el servidor**
+   → pega la URL → **Guardar**. Listo: sync y notificaciones desde GitHub Pages sin tocar código.
+
+> El plan gratis de Render **duerme a los 15 min** de inactividad (despierta en ~1 min y pierde lo que
+> había en memoria). Para que no duerma, crea un monitor gratuito en
+> [cron-job.org](https://cron-job.org) o [UptimeRobot](https://uptimerobot.com) que haga **GET** a
+> `https://tu-servidor.onrender.com/health` **cada 10 minutos**.
+
+### Notas
+
+- GitHub Pages sirve por **HTTPS**, igual que Render: sin problemas de contenido mixto.
+- La URL del servidor se guarda por dispositivo (`localStorage`); en cada navegador/dispositivo
+  hay que configurarla una vez (o tocar la campana con la URL por defecto si es localhost).
+- Push solo funciona con el server accesible por **HTTPS** desde el navegador.
 
 ## Estructura
 
@@ -156,14 +185,20 @@ fieldlog/
 ├── index.html          # UI: bitácora, inventario, modal, barra de estado, ayuda (?)
 ├── manifest.json       # Instalación PWA (standalone, colores, íconos 192/512 + maskable)
 ├── sw.js               # Service Worker: caché app shell, sync, push, notificationclick
+├── render.yaml         # Blueprint de Render para el servidor
+├── .gitignore
 ├── css/
 │   ├── style.css
 │   └── animate.css
 ├── js/
-│   ├── app.js          # Lógica jQuery: vistas, sync, notificaciones, ayuda
+│   ├── app.js          # Lógica jQuery: vistas, sync, notificaciones, ayuda, servidor configurable
 │   ├── db.js           # Capa IndexedDB (almacenamiento offline)
 │   └── libs/jquery.js
-└── img/
-    ├── favicon.ico
-    └── icons/          # 72 → 512 px + maskable 192/512
+├── img/
+│   ├── favicon.ico
+│   └── icons/          # 72 → 512 px + maskable 192/512
+└── server/             # Servidor de notificaciones y sync (Express + web-push)
+    ├── src/server.js
+    ├── package.json
+    └── .env            # (no se sube) VAPID_PUBLIC / VAPID_PRIVATE
 ```

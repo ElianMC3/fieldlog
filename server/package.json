@@ -1,0 +1,26 @@
+{
+  "name": "fieldlog-server",
+  "version": "1.0.0",
+  "description": "Servidor de notificaciones push y sincronización de FieldLog",
+  "main": "src/server.js",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --env-file=.env src/server.js"
+  },
+  "keywords": [
+    "pwa",
+    "web-push",
+    "notifications"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "web-push": "^3.6.7"
+  }
+}

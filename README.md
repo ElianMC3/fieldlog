@@ -174,8 +174,9 @@ El repo incluye `render.yaml`, así que Render lo configura solo:
 ### Notas
 
 - GitHub Pages sirve por **HTTPS**, igual que Render: sin problemas de contenido mixto.
-- La URL del servidor se guarda por dispositivo (`localStorage`); en cada navegador/dispositivo
-  hay que configurarla una vez (o tocar la campana con la URL por defecto si es localhost).
+- Por defecto la app apunta a `https://fieldlog-server.onrender.com` (cámbialo en `js/app.js` si creas otro host).
+  La URL se guarda por dispositivo (`localStorage`): en cada navegador solo hay que tocar la campana, salvo que
+  quieras usar otro servidor (entonces configúralo en la sección 7 de la ayuda).
 - Push solo funciona con el server accesible por **HTTPS** desde el navegador.
 
 ## Estructura

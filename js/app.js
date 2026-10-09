@@ -4,10 +4,9 @@
 const VAPID_PUBLIC_KEY = 'BKsTf1wxQNiM0tlZUpgzbxoPP-C3phHxs4wEKs7MgK-XJ1vp37vl3YWUNewnNjvTS7I-pHIrGUna2TVpWXmCwpM';
 
 // URL del servidor de notificaciones/sincronización.
-// Se puede cambiar en caliente desde la ayuda (botón ?), así la app publicada en
-// GitHub Pages puede apuntar a localhost (túnel) o a un host público (Render)
-// sin volver a desplegar. El valor se guarda en localStorage.
-const API_BASE_POR_DEFECTO = 'http://localhost:3000';
+// Por defecto apunta al servidor público (Render); para trabajar en local usa la
+// ayuda (botón ?) -> sección 7 y pon http://localhost:3000 (se guarda en localStorage).
+const API_BASE_POR_DEFECTO = 'https://fieldlog-server.onrender.com';
 
 function normalizarUrl(url) {
     return (url || '').trim().replace(/\/+$/, '');
